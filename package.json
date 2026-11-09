@@ -51,7 +51,8 @@
     "test:watch": "vitest",
     "check": "npm run format:check && npm run typecheck && npm test && npm run build",
     "prepack": "npm run build",
-    "test:package": "node scripts/test-package.mjs"
+    "test:package": "node scripts/test-package.mjs",
+    "test:compat": "node scripts/compat.mjs"
   },
   "devDependencies": {
     "@types/node": "26.6.6",

@@ -1,0 +1,52 @@
+name: Mind Elixir compatibility
+
+# Check the newest stable release weekly; prerelease results are advisory only.
+on:
+  schedule:
+    - cron: "30 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      mind_elixir_version:
+        description: Version to test (latest means the newest stable release).
+        default: latest
+        type: string
+      prerelease:
+        description: Also check the next dist-tag (advisory only).
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  stable:
+    name: Stable Mind Elixir
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Check compatibility
+        run: npm run test:compat -- --mind-elixir-version "$VERSION"
+        env:
+          VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.mind_elixir_version || 'latest' }}
+
+  prerelease:
+    name: Prerelease Mind Elixir (advisory)
+    if: github.event_name == 'schedule' || inputs.prerelease
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Advisory compatibility
+        run: npm run test:compat -- --mind-elixir-version next --advisory
