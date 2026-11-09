@@ -125,6 +125,23 @@ npm run check         # format, typecheck, tests with 100% coverage, build
 npm run test:package  # pack, install the tarball in an empty project and import it
 ```
 
+
+Mind Elixir is a development-only dependency; it is not required to use this package.
+Regular CI checks the pinned version. The [compatibility workflow](.github/workflows/compat.yml)
+checks the newest stable Mind Elixir release weekly, with an optional advisory
+check of the `next` prerelease. It does not update the committed lockfile.
+
+To check another version locally:
+
+```sh
+npm run test:compat -- --mind-elixir-version latest
+npm run test:compat -- --mind-elixir-version 5.15.1
+npm run test:compat -- --mind-elixir-version next --advisory
+```
+
+Compatibility checks temporarily replace the locally installed `mind-elixir`
+package. Run `npm ci` afterwards to restore the pinned development version.
+
 ## License
 
 [MIT](LICENSE)
