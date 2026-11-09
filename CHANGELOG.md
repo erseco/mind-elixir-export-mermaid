@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 — 2026-11-09
+
+- Prepare the first 1.x npm publication by aligning the package and lockfile versions with
+  the release tag. The earlier `v1.0.0` GitHub release failed its tag/version check
+  before npm publication.
+- Include scheduled Mind Elixir stable-release compatibility checks and optional advisory
+  prerelease checks from #13. No runtime API changes.
+
 ## 0.1.4 — 2026-10-18
 
 - README: measured sizes in bytes and in kB/MB, against Pele's SVG and a PNG, and a pointer to

@@ -1,6 +1,6 @@
 {
   "name": "@erseco/mind-elixir-export-mermaid",
-  "version": "0.1.4",
+  "version": "1.0.1",
   "description": "Export Mind Elixir mind maps to Mermaid mindmap syntax, for lightweight vector output with Mermaid or Pele",
   "license": "MIT",
   "author": "Ernesto Serrano",
