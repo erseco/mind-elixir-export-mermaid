@@ -125,7 +125,6 @@ npm run check         # format, typecheck, tests with 100% coverage, build
 npm run test:package  # pack, install the tarball in an empty project and import it
 ```
 
-
 Mind Elixir is a development-only dependency; it is not required to use this package.
 Regular CI checks the pinned version. The [compatibility workflow](.github/workflows/compat.yml)
 checks the newest stable Mind Elixir release weekly, with an optional advisory
