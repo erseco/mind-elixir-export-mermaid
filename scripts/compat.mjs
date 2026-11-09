@@ -2,20 +2,63 @@
 // Keep package.json and package-lock.json untouched; change only local node_modules.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { parseArgs } from "node:util";
 
-const args = process.argv.slice(2);
-const versionFlag = args.indexOf("--mind-elixir-version");
-const requested = args[versionFlag + 1];
-const advisory = args.includes("--advisory");
+const { values } = parseArgs({
+  options: {
+    "mind-elixir-version": { type: "string" },
+    advisory: { type: "boolean", default: false },
+  },
+});
+const requested = values["mind-elixir-version"];
+const advisory = values.advisory;
 
-if (versionFlag === -1 || !requested || requested.startsWith("--")) {
+if (!requested) {
   console.error(
-    "Usage: npm run test:compat -- --mind-elixir-version <latest|next|version> [--advisory]",
+    "Usage: npm run test:compat -- --mind-elixir-version VERSION [--advisory]",
   );
   process.exit(1);
 }
 
-const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+/** Parse an npm-style version without regular expressions or dynamic indexing. */
+function parseVersion(version) {
+  if (typeof version !== "string" || version.length > 100) return null;
+  const [core, ...suffixParts] = version.split("-");
+  const [major, minor, patch, ...extra] = core.split(".");
+  if (extra.length > 0) return null;
+
+  const parts = [major, minor, patch];
+  if (
+    parts.some(
+      (part) =>
+        !part ||
+        !Number.isSafeInteger(Number(part)) ||
+        String(Number(part)) !== part,
+    )
+  ) {
+    return null;
+  }
+
+  const suffix = suffixParts.join("-");
+  if (
+    suffixParts.length > 0 &&
+    (!suffix ||
+      !Array.from(suffix).every((char) =>
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-".includes(
+          char,
+        ),
+      ))
+  ) {
+    return null;
+  }
+
+  return {
+    major: Number(major),
+    minor: Number(minor),
+    patch: Number(patch),
+    prerelease: suffixParts.length > 0,
+  };
+}
 
 function npm(args, capture = false) {
   return execFileSync("npm", args, {
@@ -24,13 +67,13 @@ function npm(args, capture = false) {
 }
 
 function compareVersions(a, b) {
-  const left = a.split(".").map(Number);
-  const right = b.split(".").map(Number);
-  for (let i = 0; i < 3; i++) {
-    const delta = left[i] - right[i];
-    if (delta !== 0) return delta;
-  }
-  return 0;
+  const left = parseVersion(a);
+  const right = parseVersion(b);
+  return (
+    left.major - right.major ||
+    left.minor - right.minor ||
+    left.patch - right.patch
+  );
 }
 
 function resolveVersion(spec) {
@@ -40,10 +83,7 @@ function resolveVersion(spec) {
       npm(["view", "mind-elixir", "versions", "--json"], true),
     );
     const versions = (Array.isArray(all) ? all : [all])
-      .filter(
-        (version) =>
-          typeof version === "string" && /^\d+\.\d+\.\d+$/.test(version),
-      )
+      .filter((version) => parseVersion(version)?.prerelease === false)
       .sort(compareVersions);
     if (versions.length === 0) {
       throw new Error("No stable Mind Elixir version found");
@@ -64,7 +104,7 @@ function resolveVersion(spec) {
 
 try {
   const version = resolveVersion(requested);
-  if (!SEMVER.test(version)) {
+  if (!parseVersion(version)) {
     throw new Error(`Invalid Mind Elixir version: ${version}`);
   }
   console.log(`Checking Mind Elixir ${version} (requested: ${requested})`);
