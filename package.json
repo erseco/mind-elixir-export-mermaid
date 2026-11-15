@@ -59,7 +59,7 @@
     "@vitest/coverage-v8": "5.1.0",
     "mind-elixir": "6.0.0",
     "pele": "1.13.0",
-    "prettier": "3.9.10",
+    "prettier": "3.10.1",
     "typescript": "7.0.2",
     "vitest": "5.1.0"
   }
